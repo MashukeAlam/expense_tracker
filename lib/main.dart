@@ -23,7 +23,6 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   List<double> expenseListForWeek = [];
-  List<int> totalExpenses = [0, 0, 0, 0, 0, 0, 0];
   double maxExpenseForWeek = 60;
   late Box expenseBox;
   final ScrollController _scrollController = ScrollController();
@@ -35,8 +34,8 @@ class _MyAppState extends State<MyApp> {
     expenseListForWeek = getWeeklyExpenses();
     maxExpenseForWeek = expenseListForWeek
         .reduce((current, next) => current > next ? current : next);
-    WidgetsBinding.instance.addPostFrameCallback((_) => {
-      _scrollToEnd()
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToEnd();
     });
   }
 
@@ -76,10 +75,6 @@ class _MyAppState extends State<MyApp> {
     return weeklyExpenses;
   }
 
-  /// Stores the expense item in the Hive box by date. Each date can have multiple
-  /// expense items stored in a list.
-  Future<void> storeExpenseItem(ExpenseItem item) async {}
-
   double getExpenseByDate(DateTime date) {
     String targetDate = date.toIso8601String().substring(0, 10);
 
@@ -92,7 +87,7 @@ class _MyAppState extends State<MyApp> {
       }
     }
 
-    return sum < 25 ? 25 : sum;
+    return sum;
   }
 
   Future<void> _showAddExpenseDialog() async {
@@ -103,43 +98,56 @@ class _MyAppState extends State<MyApp> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text("Expense"),
+          title: const Text(
+            "Expense",
+            style: TextStyle(color: Colors.black45),
+          ),
+          backgroundColor: Colors.deepPurple[50],
           content: SizedBox(
             width: MediaQuery.of(context).size.width,
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                TextField(
-                  decoration: const InputDecoration(
-                    hintText: "spent on?",
-                    hintStyle: TextStyle(color: Colors.grey),
+                Padding(
+                  padding: const EdgeInsets.all(5.0),
+                  child: TextField(
+                    decoration: const InputDecoration(
+                        hintText: "spent on?",
+                        hintStyle: TextStyle(color: Colors.grey),
+                        border: OutlineInputBorder(),
+                        ),
+                    onChanged: (value) {
+                      title = value;
+                    },
                   ),
-                  onChanged: (value) {
-                    title = value;
-                  },
                 ),
-                TextField(
-                  decoration: const InputDecoration(
-                    hintText: "and how much?",
-                    hintStyle: TextStyle(color: Colors.grey),
+
+                Padding(
+                  padding: const EdgeInsets.all(5.0),
+                  child: TextField(
+                    decoration: const InputDecoration(
+                      hintText: "and how much?",
+                      hintStyle: TextStyle(color: Colors.grey),
+                      border: const OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                    onChanged: (value) {
+                      amountStr = value;
+                    },
                   ),
-                  keyboardType: TextInputType.number,
-                  onChanged: (value) {
-                    amountStr = value;
-                  },
                 ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 8.0),
+                  padding: const EdgeInsets.fromLTRB(5.0, 10.0, 5.0, 5.0),
                   child: SlideAction(
                     borderRadius: 18,
-                    innerColor: Colors.deepPurple,
-                    outerColor: Colors.deepPurple[200],
+                    innerColor: Colors.deepPurple[400],
+                    outerColor: Colors.deepPurple[100],
                     sliderButtonIcon: const Icon(
                       Icons.add,
                       color: Colors.white60,
                     ),
-                    text: 'Slide to add...',
+                    text: '    Slide to add...',
                     textStyle: const TextStyle(
                       color: Colors.white60,
                       fontSize: 18,
@@ -173,8 +181,6 @@ class _MyAppState extends State<MyApp> {
       },
     );
   }
-
-  Future<void> _saveExpense(ExpenseItem item) async {}
 
   @override
   Widget build(BuildContext context) {
@@ -237,13 +243,16 @@ class _MyAppState extends State<MyApp> {
                 flex: 1,
                 child: Container(
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(15.0), // Set rounded corners
+                    borderRadius:
+                        BorderRadius.circular(15.0), // Set rounded corners
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withOpacity(0.2), // Add shadow effect
+                        color:
+                            Colors.grey.withOpacity(0.2), // Add shadow effect
                         spreadRadius: 1,
-                        blurRadius: 4,
-                        offset: const Offset(0, 3), // changes position of shadow
+                        blurRadius: 30,
+                        offset:
+                            const Offset(0, -1), // changes position of shadow
                       ),
                     ],
                   ),
@@ -253,14 +262,17 @@ class _MyAppState extends State<MyApp> {
                     itemBuilder: (context, index) {
                       final expense = expenseBox.getAt(index);
                       return Container(
-                        margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0), // Add margin between items
+                        margin: const EdgeInsets.symmetric(
+                            vertical: 5.0,
+                            horizontal: 10.0), // Add margin between items
                         decoration: BoxDecoration(
                           color: Colors.deepPurple[100], // Set background color
-                          borderRadius: BorderRadius.circular(15.0), // Set rounded corners
-                          boxShadow: [],
+                          borderRadius: BorderRadius.circular(
+                              15.0), // Set rounded corners
                         ),
                         child: Padding(
-                          padding: const EdgeInsets.fromLTRB(7.0, 0.0, 7.0, 0.0),
+                          padding:
+                              const EdgeInsets.fromLTRB(7.0, 0.0, 7.0, 0.0),
                           child: ListTile(
                             title: Text(expense['title']),
                             titleTextStyle: const TextStyle(
@@ -279,7 +291,10 @@ class _MyAppState extends State<MyApp> {
                               color: Colors.black26,
                             ), // Formatting amount
                             trailing: Text(
-                                '৳${expense['amount'].toString()}'), // Display the date
+                              '৳${expense['amount'].toString()}',
+                              style: const TextStyle(
+                                  fontSize: 14, color: Colors.black38),
+                            ), // Display the date
                           ),
                         ),
                       );
@@ -301,7 +316,9 @@ class _MyAppState extends State<MyApp> {
           floatingActionButton: FloatingActionButton(
             onPressed: _showAddExpenseDialog,
             tooltip: 'Add Expense',
-            child: const Icon(Icons.add),
+            child: const Icon(
+              Icons.add,
+            ),
           ),
         ),
       ),
